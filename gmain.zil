@@ -2,6 +2,8 @@
 			    The ZORK Trilogy
 		       started on 7/28/83 by MARC"
 
+<CONSTANT SERIAL 0>
+
 <GLOBAL PLAYER <>>
 
 <GLOBAL P-WON <>>
@@ -29,15 +31,39 @@
 ;"GO now lives in SPECIAL.ZIL"    
 
 
-<ROUTINE MAIN-LOOP ("AUX" ICNT OCNT NUM CNT OBJ TBL V PTBL OBJ1 TMP) 
-   <REPEAT ()
+<ROUTINE MAIN-LOOP ("AUX" TRASH)
+	 <REPEAT ()
+		 <SET TRASH <MAIN-LOOP-1>>>>
+
+<ROUTINE MAIN-LOOP-1 ("AUX" ICNT OCNT NUM CNT OBJ TBL V PTBL OBJ1 TMP O I) 
      <SET CNT 0>
      <SET OBJ <>>
      <SET PTBL T>
      <COND (<SETG P-WON <PARSER>>
 	    <SET ICNT <GET ,P-PRSI ,P-MATCHLEN>>
+	    <SET OCNT <GET ,P-PRSO ,P-MATCHLEN>>
+	    <COND (<AND ,P-IT-OBJECT <ACCESSIBLE? ,P-IT-OBJECT>>
+		   <SET TMP <>>
+		   <REPEAT ()
+			   <COND (<G? <SET CNT <+ .CNT 1>> .ICNT>
+				  <RETURN>)
+				 (T
+				  <COND (<EQUAL? <GET ,P-PRSI .CNT> ,IT>
+					 <PUT ,P-PRSI .CNT ,P-IT-OBJECT>
+					 <SET TMP T>
+					 <RETURN>)>)>>
+		   <COND (<NOT .TMP>
+			  <SET CNT 0>
+			  <REPEAT ()
+			   <COND (<G? <SET CNT <+ .CNT 1>> .OCNT>
+				  <RETURN>)
+				 (T
+				  <COND (<EQUAL? <GET ,P-PRSO .CNT> ,IT>
+					 <PUT ,P-PRSO .CNT ,P-IT-OBJECT>
+					 <RETURN>)>)>>)>
+		   <SET CNT 0>)>
 	    <SET NUM
-		 <COND (<0? <SET OCNT <GET ,P-PRSO ,P-MATCHLEN>>> .OCNT)
+		 <COND (<0? .OCNT> .OCNT)
 		       (<G? .OCNT 1>
 			<SET TBL ,P-PRSO>
 			<COND (<0? .ICNT> <SET OBJ <>>)
@@ -50,7 +76,9 @@
 			.ICNT)
 		       (T 1)>>
 	    <COND (<AND <NOT .OBJ> <1? .ICNT>> <SET OBJ <GET ,P-PRSI 1>>)>
-	    <COND (<==? ,PRSA ,V?WALK> <SET V <PERFORM ,PRSA ,PRSO>>)
+	    <COND (<AND <==? ,PRSA ,V?WALK>
+			<NOT <ZERO? ,P-WALK-DIR>>>
+		   <SET V <PERFORM ,PRSA ,PRSO>>)
 		  (<0? .NUM>
 		   <COND (<0? <BAND <GETB ,P-SYNTAX ,P-SBITS> ,P-SONUMS>>
 			  <SET V <PERFORM ,PRSA>>
@@ -86,45 +114,37 @@
 				 (T
 				  <COND (.PTBL <SET OBJ1 <GET ,P-PRSO .CNT>>)
 					(T <SET OBJ1 <GET ,P-PRSI .CNT>>)>
-				  <SETG PRSO <COND (.PTBL .OBJ1) (T .OBJ)>>
-				  <SETG PRSI <COND (.PTBL .OBJ) (T .OBJ1)>>
-				  <COND (<OR <G? .NUM 1>
-					     <EQUAL? <GET <GET ,P-ITBL ,P-NC1>
-							  0>
-						     ,W?ALL>>
-					 <COND (<EQUAL? .OBJ1
-							,NOT-HERE-OBJECT>
-						<SETG P-NOT-HERE
-						      <+ ,P-NOT-HERE 1>>
-						<AGAIN>)
-					       (<AND <VERB? TAKE>
-						     ,PRSI
-						     <EQUAL? <GET <GET ,P-ITBL
-								       ,P-NC1>
-								  0>
-							     ,W?ALL>
-						     <NOT <IN? ,PRSO ,PRSI>>>
-						<AGAIN>)
-					       (<AND <EQUAL? ,P-GETFLAGS
-							     ,P-ALL>
-						     <VERB? TAKE>
-						     <OR <AND <NOT <EQUAL?
-							       <LOC .OBJ1>
-							       ,WINNER
-							       ,HERE>>
-							      <NOT <FSET?
-								  <LOC .OBJ1>
-								 ,SURFACEBIT>>>
-							 <NOT <OR <FSET? .OBJ1
-							              ,TAKEBIT>
-							          <FSET? .OBJ1
-							       ,TRYTAKEBIT>>>>>
-						<AGAIN>)
-					       (T
-						<COND (<EQUAL? .OBJ1 ,IT>
-						       <PRINTD ,P-IT-OBJECT>)
-						      (T <PRINTD .OBJ1>)>
-						<TELL ": ">)>)>
+				  <SET O <COND (.PTBL .OBJ1) (T .OBJ)>>
+				  <SET I <COND (.PTBL .OBJ) (T .OBJ1)>>
+
+;"multiple exceptions"
+<COND (<OR <G? .NUM 1>
+	   <EQUAL? <GET <GET ,P-ITBL ,P-NC1> 0> ,W?ALL>>
+       <SET V <LOC ,WINNER>>
+       <COND (<EQUAL? .O ,NOT-HERE-OBJECT>
+	      <SETG P-NOT-HERE <+ ,P-NOT-HERE 1>>
+	      <AGAIN>)
+	     (<AND <VERB? TAKE>
+		   .I
+		   <EQUAL? <GET <GET ,P-ITBL ,P-NC1> 0> ,W?ALL>
+		   <NOT <IN? .O .I>>>
+	      <AGAIN>)
+	     (<AND <EQUAL? ,P-GETFLAGS ,P-ALL>
+		   <VERB? TAKE>
+		   <OR <AND <NOT <EQUAL? <LOC .O> ,WINNER ,HERE .V>>
+			    <NOT <EQUAL? <LOC .O> .I>>
+			    <NOT <FSET? <LOC .O> ,SURFACEBIT>>>
+		       <NOT <OR <FSET? .O ,TAKEBIT>
+				<FSET? .O ,TRYTAKEBIT>>>>>
+	      <AGAIN>)
+	     (ELSE
+	      <COND (<EQUAL? .OBJ1 ,IT>
+		     <PRINTD ,P-IT-OBJECT>)
+		    (T <PRINTD .OBJ1>)>
+	      <TELL ": ">)>)>
+;"end multiple exceptions"
+				  <SETG PRSO .O>
+				  <SETG PRSI .I>
 				  <SET TMP T>
 				  <SET V <PERFORM ,PRSA ,PRSO ,PRSI>>
 				  <COND (<==? .V ,M-FATAL> <RETURN>)>)>>)>
@@ -132,7 +152,8 @@
 		   ;<COND (<==? <LOC ,WINNER> ,PRSO>
 			  <SETG PRSO <>>)>
 		   <SET V <APPLY <GETP <LOC ,WINNER> ,P?ACTION> ,M-END>>)>
-	    <COND (<VERB? AGAIN WALK SAVE RESTORE SCORE VERSION ;WAIT> T)
+	    ;<COND (<VERB? ;AGAIN ;"WALK -- why was this here?"
+			  SAVE RESTORE ;SCORE ;VERSION ;WAIT> T)
 		  (T
 		   <SETG L-PRSA ,PRSA>
 		   <SETG L-PRSO ,PRSO>
@@ -140,17 +161,16 @@
 	    <COND (<==? .V ,M-FATAL> <SETG P-CONT <>>)>)
 	   (T
 	    <SETG P-CONT <>>)>
+     %<COND (<==? ,ZORK-NUMBER 3>
+	     '<COND (<NOT ,CLEFT-QUEUED?>
+		     <ENABLE <QUEUE I-CLEFT <+ 70 <RANDOM 70>>>>
+		     <SETG CLEFT-QUEUED? T>)>)
+	    (ELSE '<NULL-F>)>
      <COND (,P-WON
 	    <COND (<VERB? TELL BRIEF SUPER-BRIEF VERBOSE SAVE VERSION
 			  QUIT RESTART SCORE SCRIPT UNSCRIPT RESTORE> T)
-		  (T <SET V <CLOCKER>>)>)>>>
+		  (T <SET V <CLOCKER>>)>)>>
  
-<GLOBAL L-PRSA <>>  
- 
-<GLOBAL L-PRSO <>>  
- 
-<GLOBAL L-PRSI <>>  
-
 <GLOBAL P-MULT <>>
 
 <GLOBAL P-NOT-HERE 0>
@@ -172,7 +192,7 @@
 	<SET OO ,PRSO>
 	<SET OI ,PRSI>
 	<COND (<AND <EQUAL? ,IT .I .O>
-		    <NOT <EQUAL? ,P-IT-LOC ,HERE>>>
+		    <NOT <ACCESSIBLE? ,P-IT-OBJECT>>>
 	       <TELL "I don't see what you are referring to." CR>
 	       <RFATAL>)>
 	<COND (<==? .O ,IT> <SET O ,P-IT-OBJECT>)>
@@ -180,8 +200,7 @@
 	<SETG PRSA .A>
 	<SETG PRSO .O>
 	<COND (<AND ,PRSO <NOT <EQUAL? ,PRSI ,IT>> <NOT <VERB? WALK>>>
-	       <SETG P-IT-OBJECT ,PRSO>
-	       <SETG P-IT-LOC ,HERE>)>
+	       <SETG P-IT-OBJECT ,PRSO>)>
 	<SETG PRSI .I>
 	<COND (<AND <EQUAL? ,NOT-HERE-OBJECT ,PRSO ,PRSI>
 		    <SET V <NOT-HERE-OBJECT-F>>> .V)
@@ -225,7 +244,7 @@
 	<SET OO ,PRSO>
 	<SET OI ,PRSI>
 	<COND (<AND <EQUAL? ,IT .I .O>
-		    <NOT <EQUAL? ,P-IT-LOC ,HERE>>>
+		    <NOT <ACCESSIBLE? ,P-IT-OBJECT>>>
 	       <TELL "I don't see what you are referring to." CR>
 	       <RFATAL>)>
 	<COND (<==? .O ,IT> <SET O ,P-IT-OBJECT>)>
@@ -233,8 +252,7 @@
 	<SETG PRSA .A>
 	<SETG PRSO .O>
 	<COND (<AND ,PRSO <NOT <VERB? WALK>>>
-	       <SETG P-IT-OBJECT ,PRSO>
-	       <SETG P-IT-LOC ,HERE>)>
+	       <SETG P-IT-OBJECT ,PRSO>)>
 	<SETG PRSI .I>
 	<COND (<AND <EQUAL? ,NOT-HERE-OBJECT ,PRSO ,PRSI>
 		    <SET V <D-APPLY "Not Here" ,NOT-HERE-OBJECT-F>>> .V)

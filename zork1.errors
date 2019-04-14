@@ -1,0 +1,35 @@
+Assembling ZORK1.ZAP.25 on Friday, April 29, 1988 12:12:19
+Release: 119
+
+    64	Inserting ZORK1FREQ.XZAP.3	   (624 bytes)
+   688	Inserting ZORK1DAT.ZAP.22	 (18596 bytes)
+ 19284	Inserting ZORK1PUR.ZAP.9	  (1214 bytes)
+ 20498	Inserting GMACROS.ZAP.25	   (119 bytes)
+ 20617	Inserting 1DUNGEON.ZAP.24	   (232 bytes)
+ 20849	Inserting GGLOBALS.ZAP.23	  (1160 bytes)
+ 22009	Inserting GCLOCK.ZAP.23	   (175 bytes)
+ 22184	Inserting GMAIN.ZAP.23	   (891 bytes)
+ 23075	Inserting GPARSER.ZAP.21	  (6585 bytes)
+ 29660	Inserting GVERBS.ZAP.22	 (10530 bytes)
+ 40190	Inserting 1ACTIONS.ZAP.21	 (29982 bytes)
+ 70172	Inserting ZORK1STR.ZAP.21	 (16666 bytes)
+
+Symbols unused:
+UNTIE-FROM
+BREATHE
+CYCLOPS-MELEE
+TROLL-MELEE
+P-DIRECTION
+DEF2A
+DEF3C
+THIEF-MELEE
+
+250 objects.
+155 globals.
+684 word vocabulary.
+
+ 86838 bytes (85K).
+ 19284 bytes of preload.
+ 11282 bytes of impure.
+
+Outputting symbol tables

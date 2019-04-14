@@ -64,10 +64,14 @@ to brush them with." CR>)
 <ROUTINE GRANITE-WALL-F ()
 	 <COND (<EQUAL? ,HERE ,NORTH-TEMPLE>
 		<COND (<VERB? FIND>
-		       <TELL "The west wall is solid granite here." CR>)>)
+		       <TELL "The west wall is solid granite here." CR>)
+		      (<VERB? TAKE RAISE LOWER>
+		       <TELL "It's solid granite." CR>)>)
 	       (<EQUAL? ,HERE ,TREASURE-ROOM>
 		<COND (<VERB? FIND>
-		       <TELL "The east wall is solid granite here." CR>)>)
+		       <TELL "The east wall is solid granite here." CR>)
+		      (<VERB? TAKE RAISE LOWER>
+		       <TELL "It's solid granite." CR>)>)
 	       (<EQUAL? ,HERE ,SLIDE-ROOM>
 		<COND (<VERB? FIND READ>
 		       <TELL "It only SAYS \"Granite Wall\"." CR>)
@@ -122,8 +126,20 @@ It is clear that the owners must have been extremely wealthy." CR>)
 	  (<VERB? BURN>
 	   <TELL "You must be joking." CR>)>>
 
+;"0 -> no next, 1 -> success, 2 -> failed move"
+
+<ROUTINE GO-NEXT (TBL "AUX" VAL)
+	 <COND (<SET VAL <LKP ,HERE .TBL>>
+		<COND (<NOT <GOTO .VAL>> 2)
+		      (T 1)>)>>
+
 <ROUTINE FOREST-F ()
 	 <COND (<VERB? WALK-AROUND>
+		<COND (<OR <EQUAL? ,HERE
+			       ,WEST-OF-HOUSE ,NORTH-OF-HOUSE
+			       ,SOUTH-OF-HOUSE>
+			   <EQUAL? ,HERE ,EAST-OF-HOUSE>>
+		       <TELL "You aren't even in the forest." CR>)>
 		<GO-NEXT ,FOREST-AROUND>)
 	       (<VERB? DISEMBARK>
 		<TELL "You will have to specify a direction." CR>)
@@ -140,7 +156,7 @@ It is clear that the owners must have been extremely wealthy." CR>)
 
 <ROUTINE WATER-F ("AUX" AV W PI?)
 	 <COND (<VERB? SGIVE> <RFALSE>)
-	       (<VERB? THROUGH>
+	       (<VERB? THROUGH BOARD>
 		<TELL <PICK-ONE ,SWIMYUKS> CR>
 		<RTRUE>)
 	       (<VERB? FILL>	;"fill bottle with water =>"
@@ -153,8 +169,9 @@ It is clear that the owners must have been extremely wealthy." CR>)
 		    <EQUAL? ,PRSO ,WATER>>
 		<SET W ,PRSO>
 		<SET PI? <>>)
-	       (<SET W ,PRSI>
-		<SET PI? T>)>
+	       (ELSE
+		<SET W ,PRSI>
+		<COND (.W <SET PI? T>)>)>
 	 <COND (<EQUAL? .W ,GLOBAL-WATER>
 		<SET W ,WATER>
 		<COND (<VERB? TAKE PUT> <REMOVE-CAREFULLY .W>)>)>
@@ -192,8 +209,19 @@ It is clear that the owners must have been extremely wealthy." CR>)
 "It's in the bottle. Perhaps you should take that instead." CR>)
 		      (T
 		       <TELL "The water slips through your fingers." CR>)>)
-	       (.PI? <TELL "Nice try." CR>)
+	       (.PI?
+		<COND (<AND <VERB? PUT>
+			    <GLOBAL-IN? ,RIVER ,HERE>>
+		       <PERFORM ,V?PUT ,PRSO ,RIVER>)
+		      (ELSE
+		       <TELL "Nice try." CR>)>
+		<RTRUE>)
 	       (<VERB? DROP GIVE>
+		<COND (<AND <VERB? DROP>
+			    <IN? ,WATER ,BOTTLE>
+			    <NOT <FSET? ,BOTTLE ,OPENBIT>>>
+		       <TELL "The bottle is closed." CR>
+		       <RTRUE>)>
 		<REMOVE-CAREFULLY ,WATER>
 		<COND (.AV
 		       <TELL "There is now a puddle in the bottom of the "
@@ -288,10 +316,11 @@ It is clear that the owners must have been extremely wealthy." CR>)
 
 <ROUTINE FLY-ME ()
 	 <FWEEP 4>
-	 <TELL CR
+	 <TELL
 "The bat grabs you by the scruff of your neck and lifts you away...." CR CR>
 	 <GOTO <PICK-ONE ,BAT-DROPS> <>>
-	 <V-FIRST-LOOK>
+	 <COND (<NOT <EQUAL? ,HERE ,ENTRANCE-TO-HADES>>
+		<V-FIRST-LOOK>)>
 	 T>
 
 <ROUTINE FWEEP (N)
@@ -398,7 +427,7 @@ is completed in \"ZORK III: The Dungeon Master.\"" CR>)
 		      (T
 		       <TELL "
 ZORK: The Great Underground Empire.|" CR>)>
-		<V-QUIT <>>)>>
+		<FINISH>)>>
 
 <ROUTINE BARROW-DOOR-FCN ()
 	 <COND (<VERB? OPEN CLOSE>
@@ -610,8 +639,8 @@ uncomfortable, you stand up again." CR>)
 
 <ROUTINE TROLL-FCN ("OPTIONAL" (MODE <>))
 	 <COND (<VERB? TELL>
-		<TELL "The troll isn't much of a conversationalist." CR>
-		<SETG P-CONT <>>)
+		<SETG P-CONT <>>
+		<TELL "The troll isn't much of a conversationalist." CR>)
 	       (<EQUAL? .MODE ,F-BUSY?>
 		<COND (<IN? ,AXE ,TROLL> <>)
 		      (<AND <IN? ,AXE ,HERE> <PROB 75 90>>
@@ -738,7 +767,7 @@ his guttural tongue." CR>)
 
 "SUBTITLE GRATING/MAZE"
 
-<GLOBAL LEAVES-GONE <>>
+;<GLOBAL LEAVES-GONE <>> ;"no longer used?"
 <GLOBAL GRATE-REVEALED <>>
 <GLOBAL GRUNLOCK <>>
 
@@ -1020,7 +1049,7 @@ drawing you over the railing and down." CR>
 		       <JIGS-UP
 "I'm afraid that the leap you attempted has done you in.">)>)>>
 
-<GLOBAL EGYPT-FLAG <>>
+;<GLOBAL EGYPT-FLAG <>>	;"no longer used?"
 
 \
 
@@ -1177,9 +1206,9 @@ glowing serenely">)>
 				    T)>)
 			    (T <TELL
 "The bolt won't turn with your best effort." CR>)>)
-		     (,PRSI <TELL
-"The bolt won't turn using the " D ,PRSI "." CR>)
-		     (T <TELL "You can't with your bare hands." CR>)>)
+		     (ELSE
+		      <TELL
+"The bolt won't turn using the " D ,PRSI "." CR>)>)
 	      (<VERB? TAKE>
 	       <INTEGRAL-PART>)
 	      (<VERB? OIL>
@@ -1253,7 +1282,7 @@ to the other side." CR>)>
 	 T>
 
 <GLOBAL DROWNINGS
-      <TABLE "up to your ankles."
+      <TABLE (PURE) "up to your ankles."
 	"up to your shin."
 	"up to your knees."
 	"up to your hips."
@@ -1613,7 +1642,7 @@ His enflamed tongue protrudes from his man-sized mouth." CR>)>)
 	       <OR <0? ,CYCLOWRATH> <ENABLE <INT I-CYCLOPS>>>)>>
 
 <GLOBAL CYCLOMAD
-	<TABLE
+	<TABLE (PURE)
 	  "The cyclops seems somewhat agitated."
 	  "The cyclops appears to be getting more agitated."
 	  "The cyclops is moving about the room, looking for something."
@@ -1662,7 +1691,7 @@ stop. With a tremendous effort, you scramble out of the room." CR CR>
 "The rest of your commands have been lost in the noise." CR>
 			      <SETG P-CONT <>>)>
 		       <REPEAT ()
-			       <CRLF>
+			       <COND (<NOT ,SUPER-BRIEF> <CRLF>)>
 			       <TELL ">">
 			       <READ ,P-INBUF ,P-LEXV>
 			       <COND (<0? <GETB ,P-LEXV ,P-LEXWORDS>>
@@ -1691,7 +1720,8 @@ stop. With a tremendous effort, you scramble out of the room." CR CR>
 				      <SETG LOUD-FLAG T>
 				      <FCLEAR ,BAR ,SACREDBIT>
 				      <TELL
-"The acoustics of the room change subtly." CR CR>
+"The acoustics of the room change subtly." CR>
+				      <COND (<NOT ,SUPER-BRIEF> <CRLF>)>
 				      <RETURN>)
 				     ;(,DEAD <CRLF>)
 				     (T
@@ -1743,7 +1773,7 @@ walls here. He does not speak, but it is clear from his aspect that
 the bag will be taken only over his dead body." CR>
 		       <SETG THIEF-HERE T>
 		       <RTRUE>)
-		      (<IN? ,STILETTO ,WINNER>
+		      ;(<IN? ,STILETTO ,WINNER>
 		       <MOVE ,STILETTO ,THIEF>
 		       <FSET ,STILETTO ,NDESCBIT>
 		       <FCLEAR ,THIEF ,INVISIBLE>
@@ -1774,16 +1804,20 @@ Fortunately, he took nothing." CR>
 	        <RTRUE>)
 	       (<PROB 70> <RFALSE>)
 	       (<NOT ,DEAD>
-		<COND (<ROB ,HERE ,THIEF 100> <SET ROBBED? T>)
+		<COND (<ROB ,HERE ,THIEF 100>
+		       <SET ROBBED? ,HERE>)
 		      (<ROB ,WINNER ,THIEF>
-		       <SET ROBBED? T>
-		       <SET WINNER-ROBBED? T>)>
+		       <SET ROBBED? ,PLAYER>)>
 		<SETG THIEF-HERE T>
 	        <COND (<AND .ROBBED? <NOT .HERE?>>
 		       <TELL
 "A seedy-looking individual with a large bag just wandered through
-the room. On the way through, he quietly abstracted some valuables
-from the room and from your possession, mumbling something about
+the room. On the way through, he quietly abstracted some valuables from ">
+		       <COND (<EQUAL? .ROBBED? ,HERE>
+			      <TELL "the room">)
+			     (ELSE
+			      <TELL "your possession">)>
+		       <TELL ", mumbling something about
 \"Doing unto others before...\"" CR>
 		       <STOLE-LIGHT?>)
 		      (.HERE?
@@ -1792,10 +1826,11 @@ from the room and from your possession, mumbling something about
 			      <TELL
 "The thief just left, still carrying his large bag. You may
 not have noticed that he ">
-			      <COND (.WINNER-ROBBED?
+			      <COND (<EQUAL? .ROBBED? ,PLAYER>
 				     <TELL
 "robbed you blind first.">)
-				    (T <TELL
+				    (T
+				     <TELL
 "appropriated the valuables in the room.">)>
 			      <CRLF>
 			      <STOLE-LIGHT?>)
@@ -1813,12 +1848,21 @@ large bag. Finding nothing of value, he left disgruntled." CR>
 	(T
 	 <COND (.HERE?			;"Here, already announced."
 		<COND (<PROB 30>
-		       <COND (<SET ROBBED?
-				   <OR <ROB ,HERE ,THIEF 100>
-				       <ROB ,WINNER ,THIEF>>>
+		       <COND (<ROB ,HERE ,THIEF 100>
+			      <SET ROBBED? ,HERE>)
+			     (<ROB ,WINNER ,THIEF>
+			      <SET ROBBED? ,PLAYER>)>
+		       <COND (.ROBBED?
 			      <TELL
 "The thief just left, still carrying his large bag. You may
-not have noticed that he robbed you blind first." CR>
+not have noticed that he ">
+			      <COND (<EQUAL? .ROBBED? ,PLAYER>
+				     <TELL
+"robbed you blind first.">)
+				    (T
+				     <TELL
+"appropriated the valuables in the room.">)>
+			      <CRLF>
 			      <STOLE-LIGHT?>)
 			     (T
 			      <TELL
@@ -1913,16 +1957,24 @@ your greeting with his usual graciousness." CR>)
 		      (<AND <EQUAL? ,PRSO ,KNIFE>
 			    <VERB? THROW>
 			    <NOT <FSET? ,THIEF ,FIGHTBIT>>>
+		       <MOVE ,PRSO ,HERE>
 		       <COND (<PROB 10 0>
 			      <TELL
 "You evidently frightened the robber, though you didn't hit him. He
 flees">
-			      <COND (<SET X <FIRST? ,THIEF>>
+			      <REMOVE ,LARGE-BAG>
+			      <SET X <>>
+			      <COND (<IN? ,STILETTO ,THIEF>
+				     <REMOVE ,STILETTO>
+				     <SET X T>)>
+			      <COND (<FIRST? ,THIEF>
 				     <MOVE-ALL ,THIEF ,HERE>
 				     <TELL
 ", but the contents of his bag fall on the floor.">)
 				    (T
 				     <TELL ".">)>
+			      <MOVE ,LARGE-BAG ,THIEF>
+			      <COND (.X <MOVE ,STILETTO ,THIEF>)>
 			      <CRLF>
 			      <FSET ,THIEF ,INVISIBLE>)
 			     (T
@@ -1945,7 +1997,11 @@ angered by your attempt." CR>
 			      <TELL
 "Your proposed victim suddenly recovers consciousness." CR>)>
 		       <MOVE ,PRSO ,THIEF>
-		       <COND (<G? <GETP ,PRSO ,P?TVALUE> 0>
+		       <COND ;(<EQUAL? ,PRSO ,STILETTO>
+			      <TELL
+"The thief takes his stiletto and salutes you with a small nod of
+his head." CR>)
+			     (<G? <GETP ,PRSO ,P?TVALUE> 0>
 			      <SETG THIEF-ENGROSSED T>
 			      <TELL
 "The thief is taken aback by your unexpected generosity, but accepts
@@ -2079,20 +2135,18 @@ inside." CR>)>>
 "You can't. It's not a very good chalice, is it?" CR>)
 	       (T <DUMB-CONTAINER>)>>
 
-<ROUTINE TREASURE-ROOM-FCN (RARG "AUX" (FLG <>) TL)
+<ROUTINE TREASURE-ROOM-FCN (RARG "AUX" TL)
 	 <COND (<AND <EQUAL? .RARG ,M-ENTER>
-	      <1? <GET <INT I-THIEF> ,C-ENABLED?>>
-	      <NOT ,DEAD>>
-	 <COND (<SET FLG <NOT <IN? ,THIEF ,HERE>>>
-		<TELL
+		     <1? <GET <INT I-THIEF> ,C-ENABLED?>>
+		     <NOT ,DEAD>>
+		<COND (<NOT <IN? ,THIEF ,HERE>>
+		       <TELL
 "You hear a scream of anguish as you violate the robber's hideaway.
 Using passages unknown to you, he rushes to its defense." CR>
-		<MOVE ,THIEF ,HERE>
+		       <MOVE ,THIEF ,HERE>)>
 		<FSET ,THIEF ,FIGHTBIT>
-		<FCLEAR ,THIEF ,INVISIBLE>)
-	       (T
-		<FSET ,THIEF ,FIGHTBIT>)>
-	 <THIEF-IN-TREASURE>)>>
+		<FCLEAR ,THIEF ,INVISIBLE>
+		<THIEF-IN-TREASURE>)>>
 
 <ROUTINE THIEF-IN-TREASURE ("AUX" F N)
 	 <SET F <FIRST? ,HERE>>
@@ -2102,8 +2156,7 @@ Using passages unknown to you, he rushes to its defense." CR>
 suddenly vanish." CR CR>)>
 	 <REPEAT ()
 		 <COND (<NOT .F> <RETURN>)
-		       (<AND <NOT <EQUAL? .F ,CHALICE>>
-			     <NOT <EQUAL? .F ,THIEF>>>
+		       (<NOT <EQUAL? .F ,CHALICE ,THIEF>>
 			<FSET .F ,INVISIBLE>)>
 		 <SET F <NEXT? .F>>>>
 
@@ -2165,7 +2218,8 @@ artist's masterpieces, you have destroyed one." CR>)>>
 "SUBTITLE LET THERE BE LIGHT SOURCES"
 
 <GLOBAL LAMP-TABLE
-	<TABLE 100
+	<TABLE (PURE)
+	       100
 	       "The lamp appears a bit dimmer."
 	       70
 	       "The lamp is definitely dimmer now."
@@ -2333,6 +2387,7 @@ burn." CR>)
 		       <COND (<FSET? ,CANDLES ,ONBIT>
 			      <TELL "The flame is extinguished.">
 			      <FCLEAR ,CANDLES ,ONBIT>
+			      <FSET ,CANDLES ,TOUCHBIT>
 			      <SETG LIT <LIT? ,HERE>>
 			      <COND (<NOT ,LIT>
 				     <TELL " It's really dark in here....">)>
@@ -2349,7 +2404,8 @@ burn." CR>)
 		       <CRLF>)>)>>
 
 <GLOBAL CANDLE-TABLE
-	<TABLE 20
+	<TABLE (PURE)
+	       20
 	       "The candles grow shorter."
 	       10
 	       "The candles are becoming quite short."
@@ -2426,6 +2482,7 @@ is obviously deranged and holding his nose." CR>)
 	       (<AND <EQUAL? .RARG ,M-ENTER> <NOT ,DEAD>>
 		<COND (<NOT <EQUAL? <LOC ,GARLIC> ,WINNER ,HERE>>
 		       <V-LOOK>
+		       <CRLF>
 		       <FLY-ME>)>)>>
 
 <ROUTINE MACHINE-ROOM-FCN (RARG)
@@ -2443,7 +2500,7 @@ lid, which is ">
 		<CRLF>)>>
 
 <ROUTINE MACHINE-F ()
-	 <COND (<VERB? TAKE>
+	 <COND (<AND <VERB? TAKE> <EQUAL? ,PRSO ,MACHINE>>
 		<TELL "It is far too large to carry." CR>)
 	       (<VERB? OPEN>
 	        <COND (<FSET? ,MACHINE ,OPENBIT>
@@ -2489,10 +2546,7 @@ excitement abates." CR>
 					     <COND (<SET O <FIRST? ,MACHINE>>
 						    <REMOVE-CAREFULLY .O>)
 						   (T <RETURN>)>>
-				     <MOVE ,GUNK ,MACHINE>)
-				    (T)>)>)
-		      (<NOT ,PRSI>
-		       <TELL "You can't turn it with your hands..." CR>)
+				     <MOVE ,GUNK ,MACHINE>)>)>)
 		      (T
 		       <TELL "It seems that a " D ,PRSI " won't do." CR>)>)>>
 
@@ -2553,12 +2607,13 @@ walkable (I think the giveaway was the stairs and bannister)." CR>
 			      <ROB ,ON-RAINBOW ,WALL>
 			      <TELL
 "The rainbow seems to have become somewhat run-of-the-mill." CR>
-			      <SETG RAINBOW-FLAG <>>)>)
+			      <SETG RAINBOW-FLAG <>>
+			      <RTRUE>)>)
 		      (<EQUAL? ,HERE ,ON-RAINBOW>
 		       <SETG RAINBOW-FLAG <>>
 		       <JIGS-UP
 "The structural integrity of the rainbow is severely compromised,
-leaving you hanging in mid-air, supported only by water vapor. Bye.">)
+leaving you hanging in midair, supported only by water vapor. Bye.">)
 		      (T
 		       <TELL
 "A dazzling display of color briefly emanates from the sceptre." CR>)>)>>
@@ -2635,13 +2690,13 @@ with swift currents and large, half-hidden rocks. You decide to forgo your
 swim." CR>)>>
 
 <GLOBAL RIVER-SPEEDS
-	<LTABLE RIVER-1 4 RIVER-2 4 RIVER-3 3 RIVER-4 2 RIVER-5 1>>
+	<LTABLE (PURE) RIVER-1 4 RIVER-2 4 RIVER-3 3 RIVER-4 2 RIVER-5 1>>
 
 <GLOBAL RIVER-NEXT
-	<LTABLE RIVER-1 RIVER-2 RIVER-3 RIVER-4 RIVER-5>>
+	<LTABLE (PURE) RIVER-1 RIVER-2 RIVER-3 RIVER-4 RIVER-5>>
 
 <GLOBAL RIVER-LAUNCH
-	<LTABLE DAM-BASE RIVER-1
+	<LTABLE (PURE) DAM-BASE RIVER-1
 		WHITE-CLIFFS-NORTH RIVER-3
 		WHITE-CLIFFS-SOUTH RIVER-4
 		SHORE RIVER-5
@@ -2814,7 +2869,7 @@ The boat deflates to the sounds of hissing, sputtering, and cursing." CR>
 		       <TELL <GET ,BDIGS ,BEACH-DIG> CR>)>)>>
 
 <GLOBAL BDIGS
-	<TABLE "You seem to be digging a hole here."
+	<TABLE (PURE) "You seem to be digging a hole here."
 	       "The hole is getting deeper, but that's about it."
 	       "You are surrounded by a wall of sand on all sides.">>
 
@@ -2833,7 +2888,7 @@ branches. The nearest branch above you is above your reach." CR>
 		       <PRINT-CONTENTS ,PATH>
 		       <TELL "." CR>)>)
 	       (<EQUAL? .RARG ,M-BEG>
-		<COND (<AND <VERB? CLIMB-DOWN> <EQUAL? ,PRSO ,TREE>>
+		<COND (<AND <VERB? CLIMB-DOWN> <EQUAL? ,PRSO ,TREE ,ROOMS>>
 		       <DO-WALK ,P?DOWN>)
 		      (<AND <VERB? CLIMB-UP CLIMB-FOO>
 			    <EQUAL? ,PRSO ,TREE>>
@@ -2992,7 +3047,7 @@ down, the songbird flies away." CR>
 					 <NOT <IN? .RLOC ,ROOMS>>>
 				     <MOVE ,ROPE ,HERE>)>
 			      T)>)>)
-	       (<AND <VERB? CLIMB-DOWN> <EQUAL? ,PRSO ,ROPE> ,DOME-FLAG>
+	       (<AND <VERB? CLIMB-DOWN> <EQUAL? ,PRSO ,ROPE ,ROOMS> ,DOME-FLAG>
 		<DO-WALK ,P?DOWN>)
 	       (<AND <VERB? TIE-UP>
 		     <EQUAL? ,ROPE ,PRSI>>
@@ -3061,7 +3116,7 @@ down, the songbird flies away." CR>
 			    <EQUAL? ,PRSO ,P?WEST>>
 		       <TELL "You cannot enter in your condition." CR>)>)
 	       (<VERB? BRIEF VERBOSE SUPER-BRIEF
-		       VERSION AGAIN SAVE RESTORE QUIT RESTART>
+		       VERSION ;AGAIN SAVE RESTORE QUIT RESTART>
 		<>)
 	       (<VERB? ATTACK MUNG ALARM SWING>
 		<TELL "All such attacks are vain in your condition." CR>)
@@ -3076,7 +3131,7 @@ down, the songbird flies away." CR>
 		<TELL "You need no light to guide you." CR>)
 	       (<VERB? SCORE>
 		<TELL "You're dead! How can you think of your score?" CR>)
-	       (<VERB? TAKE>
+	       (<VERB? TAKE RUB>
 		<TELL "Your hand passes through its object." CR>)
 	       (<VERB? DROP THROW INVENTORY>
 		<TELL "You have no possessions." CR>)
@@ -3098,7 +3153,7 @@ down, the songbird flies away." CR>
 		<COND (<EQUAL? ,HERE ,SOUTH-TEMPLE>
 		       <FCLEAR ,LAMP ,INVISIBLE>
 		       <PUTP ,WINNER ,P?ACTION 0>
-		       <SETG GWIM-DISABLE <>>
+		       ;<SETG GWIM-DISABLE <>>
 		       <SETG ALWAYS-LIT <>>
 		       <SETG DEAD <>>
 		       <COND (<IN? ,TROLL ,TROLL-ROOM>
@@ -3201,21 +3256,21 @@ teeth ache to touch it." CR>)>>
 "tables of melee results"
 
 <GLOBAL DEF1
-	<TABLE
+	<TABLE (PURE)
 	 MISSED MISSED MISSED MISSED
 	 STAGGER STAGGER
 	 UNCONSCIOUS UNCONSCIOUS
 	 KILLED KILLED KILLED KILLED KILLED>>
 
 <GLOBAL DEF2A
-	<TABLE
+	<TABLE (PURE)
 	 MISSED MISSED MISSED MISSED MISSED
 	 STAGGER STAGGER
 	 LIGHT-WOUND LIGHT-WOUND
 	 UNCONSCIOUS>>
 
 <GLOBAL DEF2B
-	<TABLE
+	<TABLE (PURE)
 	 MISSED MISSED MISSED
 	 STAGGER STAGGER
 	 LIGHT-WOUND LIGHT-WOUND LIGHT-WOUND
@@ -3223,21 +3278,21 @@ teeth ache to touch it." CR>)>>
 	 KILLED KILLED KILLED>>
 
 <GLOBAL DEF3A
-	<TABLE
+	<TABLE (PURE)
 	 MISSED MISSED MISSED MISSED MISSED
 	 STAGGER STAGGER
 	 LIGHT-WOUND LIGHT-WOUND
 	 SERIOUS-WOUND SERIOUS-WOUND>>
 
 <GLOBAL DEF3B
-	<TABLE
+	<TABLE (PURE)
 	 MISSED MISSED MISSED
 	 STAGGER STAGGER
 	 LIGHT-WOUND LIGHT-WOUND LIGHT-WOUND
 	 SERIOUS-WOUND SERIOUS-WOUND SERIOUS-WOUND>>
 
 <GLOBAL DEF3C
-	<TABLE
+	<TABLE (PURE)
 	 MISSED
 	 STAGGER STAGGER
 	 LIGHT-WOUND LIGHT-WOUND LIGHT-WOUND LIGHT-WOUND
@@ -3411,7 +3466,7 @@ property, which is normally 0"
 		       <SETG LOAD-ALLOWED <- ,LOAD-ALLOWED 20>>)>)
 	       (<EQUAL? .RES ,STAGGER> <FSET ,WINNER ,STAGGERED>)
 	       (T
-		<AND <EQUAL? .RES ,LOSE-WEAPON> .DWEAPON>
+		;<AND <EQUAL? .RES ,LOSE-WEAPON> .DWEAPON>
 		<MOVE .DWEAPON ,HERE>
 		<COND (<SET NWEAPON <FIND-WEAPON ,WINNER>>
 		       <TELL
@@ -3446,8 +3501,8 @@ ineffective." CR>
 	 <SET DWEAPON <FIND-WEAPON .VILLAIN>>
 	 <COND (<OR <NOT .DWEAPON> <L? .DEF 0>>
 		<TELL "The ">
-		<COND (<NOT .DWEAPON> <TELL "unarmed">)
-		      (T <TELL "unconscious">)>
+		<COND (<L? .DEF 0> <TELL "unconscious">)
+		      (T <TELL "unarmed">)>
 		<TELL " " D .VILLAIN
 		      " cannot defend himself: He dies." CR>
 		<SET RES ,KILLED>)
@@ -3485,7 +3540,7 @@ ineffective." CR>
 		<COND (<L? .DEF 0> <SET DEF 0>)>)
 	       (<EQUAL? .RES ,STAGGER> <FSET ,PRSO ,STAGGERED>)
 	       (T
-		<AND <EQUAL? .RES ,LOSE-WEAPON> .DWEAPON>
+		;<AND <EQUAL? .RES ,LOSE-WEAPON> .DWEAPON>
 		<FCLEAR .DWEAPON ,NDESCBIT>
 		<FSET .DWEAPON ,WEAPONBIT>
 		<MOVE .DWEAPON ,HERE>
@@ -3554,182 +3609,182 @@ carcass has disappeared." CR>
 <CONSTANT F-DEF 1>	;"means print defender name (villain, e.g.)"
 
 <GLOBAL HERO-MELEE
- <TABLE
-  <LTABLE
-   <LTABLE "Your " F-WEP " misses the " F-DEF " by an inch.">
-   <LTABLE "A good slash, but it misses the " F-DEF " by a mile.">
-   <LTABLE "You charge, but the " F-DEF " jumps nimbly aside.">
-   <LTABLE "Clang! Crash! The " F-DEF " parries.">
-   <LTABLE "A quick stroke, but the " F-DEF " is on guard.">
-   <LTABLE "A good stroke, but it's too slow; the " F-DEF " dodges.">>
-  <LTABLE
-   <LTABLE "Your " F-WEP " crashes down, knocking the " F-DEF " into dreamland.">
-   <LTABLE "The " F-DEF " is battered into unconsciousness.">
-   <LTABLE "A furious exchange, and the " F-DEF " is knocked out!">
-   <LTABLE "The haft of your " F-WEP " knocks out the " F-DEF ".">
-   <LTABLE "The " F-DEF " is knocked out!">>
-  <LTABLE
-   <LTABLE "It's curtains for the " F-DEF " as your " F-WEP " removes his head.">
-   <LTABLE "The fatal blow strikes the " F-DEF " square in the heart:  He dies.">
-   <LTABLE "The " F-DEF " takes a fatal blow and slumps to the floor dead.">>
-  <LTABLE
-   <LTABLE "The " F-DEF " is struck on the arm; blood begins to trickle down.">
-   <LTABLE "Your " F-WEP " pinks the " F-DEF " on the wrist, but it's not serious.">
-   <LTABLE "Your stroke lands, but it was only the flat of the blade.">
-   <LTABLE "The blow lands, making a shallow gash in the " F-DEF "'s arm!">>
-  <LTABLE
-   <LTABLE "The " F-DEF " receives a deep gash in his side.">
-   <LTABLE "A savage blow on the thigh! The " F-DEF " is stunned but can still fight!">
-   <LTABLE "Slash! Your blow lands! That one hit an artery, it could be serious!">
-   <LTABLE "Slash! Your stroke connects! This could be serious!">>
-  <LTABLE
-   <LTABLE "The " F-DEF " is staggered, and drops to his knees.">
-   <LTABLE "The " F-DEF " is momentarily disoriented and can't fight back.">
-   <LTABLE "The force of your blow knocks the " F-DEF " back, stunned.">
-   <LTABLE "The " F-DEF " is confused and can't fight back.">
-   <LTABLE "The quickness of your thrust knocks the " F-DEF " back, stunned.">>
-  <LTABLE
-   <LTABLE "The " F-DEF "'s weapon is knocked to the floor, leaving him unarmed.">
-   <LTABLE "The " F-DEF " is disarmed by a subtle feint past his guard.">>>>
+ <TABLE (PURE)
+  <LTABLE (PURE)
+   <LTABLE (PURE) "Your " F-WEP " misses the " F-DEF " by an inch.">
+   <LTABLE (PURE) "A good slash, but it misses the " F-DEF " by a mile.">
+   <LTABLE (PURE) "You charge, but the " F-DEF " jumps nimbly aside.">
+   <LTABLE (PURE) "Clang! Crash! The " F-DEF " parries.">
+   <LTABLE (PURE) "A quick stroke, but the " F-DEF " is on guard.">
+   <LTABLE (PURE) "A good stroke, but it's too slow; the " F-DEF " dodges.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "Your " F-WEP " crashes down, knocking the " F-DEF " into dreamland.">
+   <LTABLE (PURE) "The " F-DEF " is battered into unconsciousness.">
+   <LTABLE (PURE) "A furious exchange, and the " F-DEF " is knocked out!">
+   <LTABLE (PURE) "The haft of your " F-WEP " knocks out the " F-DEF ".">
+   <LTABLE (PURE) "The " F-DEF " is knocked out!">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "It's curtains for the " F-DEF " as your " F-WEP " removes his head.">
+   <LTABLE (PURE) "The fatal blow strikes the " F-DEF " square in the heart: He dies.">
+   <LTABLE (PURE) "The " F-DEF " takes a fatal blow and slumps to the floor dead.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The " F-DEF " is struck on the arm; blood begins to trickle down.">
+   <LTABLE (PURE) "Your " F-WEP " pinks the " F-DEF " on the wrist, but it's not serious.">
+   <LTABLE (PURE) "Your stroke lands, but it was only the flat of the blade.">
+   <LTABLE (PURE) "The blow lands, making a shallow gash in the " F-DEF "'s arm!">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The " F-DEF " receives a deep gash in his side.">
+   <LTABLE (PURE) "A savage blow on the thigh! The " F-DEF " is stunned but can still fight!">
+   <LTABLE (PURE) "Slash! Your blow lands! That one hit an artery, it could be serious!">
+   <LTABLE (PURE) "Slash! Your stroke connects! This could be serious!">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The " F-DEF " is staggered, and drops to his knees.">
+   <LTABLE (PURE) "The " F-DEF " is momentarily disoriented and can't fight back.">
+   <LTABLE (PURE) "The force of your blow knocks the " F-DEF " back, stunned.">
+   <LTABLE (PURE) "The " F-DEF " is confused and can't fight back.">
+   <LTABLE (PURE) "The quickness of your thrust knocks the " F-DEF " back, stunned.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The " F-DEF "'s weapon is knocked to the floor, leaving him unarmed.">
+   <LTABLE (PURE) "The " F-DEF " is disarmed by a subtle feint past his guard.">>>>
 
 \
 
 "messages for cyclops (note that he has no weapon"
 
 <GLOBAL CYCLOPS-MELEE
- <TABLE
-  <LTABLE
-   <LTABLE "The Cyclops misses, but the backwash almost knocks you over.">
-   <LTABLE "The Cyclops rushes you, but runs into the wall.">>
-  <LTABLE
-   <LTABLE "The Cyclops sends you crashing to the floor, unconscious.">>
-  <LTABLE
-   <LTABLE "The Cyclops breaks your neck with a massive smash.">>
-  <LTABLE
-   <LTABLE "A quick punch, but it was only a glancing blow.">
-   <LTABLE "A glancing blow from the Cyclops' fist.">>
-  <LTABLE
-   <LTABLE "The monster smashes his huge fist into your chest, breaking several
+ <TABLE (PURE)
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops misses, but the backwash almost knocks you over.">
+   <LTABLE (PURE) "The Cyclops rushes you, but runs into the wall.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops sends you crashing to the floor, unconscious.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops breaks your neck with a massive smash.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "A quick punch, but it was only a glancing blow.">
+   <LTABLE (PURE) "A glancing blow from the Cyclops' fist.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The monster smashes his huge fist into your chest, breaking several
 ribs.">
-   <LTABLE "The Cyclops almost knocks the wind out of you with a quick punch.">>
-  <LTABLE
-   <LTABLE "The Cyclops lands a punch that knocks the wind out of you.">
-   <LTABLE "Heedless of your weapons, the Cyclops tosses you against the rock
+   <LTABLE (PURE) "The Cyclops almost knocks the wind out of you with a quick punch.">>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops lands a punch that knocks the wind out of you.">
+   <LTABLE (PURE) "Heedless of your weapons, the Cyclops tosses you against the rock
 wall of the room.">>
-  <LTABLE
-   <LTABLE "The Cyclops grabs your " F-WEP ", tastes it, and throws it to the
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops grabs your " F-WEP ", tastes it, and throws it to the
 ground in disgust.">
-   <LTABLE "The monster grabs you on the wrist, squeezes, and you drop your
+   <LTABLE (PURE) "The monster grabs you on the wrist, squeezes, and you drop your
 " F-WEP " in pain.">>
-  <LTABLE
-   <LTABLE "The Cyclops seems unable to decide whether to broil or stew his
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops seems unable to decide whether to broil or stew his
 dinner.">>
-  <LTABLE
-   <LTABLE "The Cyclops, no sportsman, dispatches his unconscious victim.">>>>
+  <LTABLE (PURE)
+   <LTABLE (PURE) "The Cyclops, no sportsman, dispatches his unconscious victim.">>>>
 
 \
 
 "messages for troll"
 
 <GLOBAL TROLL-MELEE
-<TABLE
- <LTABLE
-  <LTABLE "The troll swings his axe, but it misses.">
-  <LTABLE "The troll's axe barely misses your ear.">
-  <LTABLE "The axe sweeps past as you jump aside.">
-  <LTABLE "The axe crashes against the rock, throwing sparks!">>
- <LTABLE
-  <LTABLE "The flat of the troll's axe hits you delicately on the head, knocking
+<TABLE (PURE)
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The troll swings his axe, but it misses.">
+  <LTABLE (PURE) "The troll's axe barely misses your ear.">
+  <LTABLE (PURE) "The axe sweeps past as you jump aside.">
+  <LTABLE (PURE) "The axe crashes against the rock, throwing sparks!">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The flat of the troll's axe hits you delicately on the head, knocking
 you out.">>
- <LTABLE
-  <LTABLE "The troll neatly removes your head.">
-  <LTABLE "The troll's axe stroke cleaves you from the nave to the chops.">
-  <LTABLE "The troll's axe removes your head.">>
- <LTABLE
-  <LTABLE "The axe gets you right in the side. Ouch!">
-  <LTABLE "The flat of the troll's axe skins across your forearm.">
-  <LTABLE "The troll's swing almost knocks you over as you barely parry
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The troll neatly removes your head.">
+  <LTABLE (PURE) "The troll's axe stroke cleaves you from the nave to the chops.">
+  <LTABLE (PURE) "The troll's axe removes your head.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The axe gets you right in the side. Ouch!">
+  <LTABLE (PURE) "The flat of the troll's axe skins across your forearm.">
+  <LTABLE (PURE) "The troll's swing almost knocks you over as you barely parry
 in time.">
-  <LTABLE "The troll swings his axe, and it nicks your arm as you dodge.">>
- <LTABLE
-  <LTABLE "The troll charges, and his axe slashes you on your " F-WEP " arm.">
-  <LTABLE "An axe stroke makes a deep wound in your leg.">
-  <LTABLE "The troll's axe swings down, gashing your shoulder.">>
- <LTABLE
-  <LTABLE "The troll hits you with a glancing blow, and you are momentarily
+  <LTABLE (PURE) "The troll swings his axe, and it nicks your arm as you dodge.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The troll charges, and his axe slashes you on your " F-WEP " arm.">
+  <LTABLE (PURE) "An axe stroke makes a deep wound in your leg.">
+  <LTABLE (PURE) "The troll's axe swings down, gashing your shoulder.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The troll hits you with a glancing blow, and you are momentarily
 stunned.">
-  <LTABLE "The troll swings; the blade turns on your armor but crashes
+  <LTABLE (PURE) "The troll swings; the blade turns on your armor but crashes
 broadside into your head.">
-  <LTABLE "You stagger back under a hail of axe strokes.">
-  <LTABLE "The troll's mighty blow drops you to your knees.">>
- <LTABLE
-  <LTABLE "The axe hits your " F-WEP " and knocks it spinning.">
-  <LTABLE "The troll swings, you parry, but the force of his blow knocks your " F-WEP " away.">
-  <LTABLE "The axe knocks your " F-WEP " out of your hand. It falls to the floor.">>
- <LTABLE
-  <LTABLE "The troll hesitates, fingering his axe.">
-  <LTABLE "The troll scratches his head ruminatively:  Might you be magically
+  <LTABLE (PURE) "You stagger back under a hail of axe strokes.">
+  <LTABLE (PURE) "The troll's mighty blow drops you to your knees.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The axe hits your " F-WEP " and knocks it spinning.">
+  <LTABLE (PURE) "The troll swings, you parry, but the force of his blow knocks your " F-WEP " away.">
+  <LTABLE (PURE) "The axe knocks your " F-WEP " out of your hand. It falls to the floor.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The troll hesitates, fingering his axe.">
+  <LTABLE (PURE) "The troll scratches his head ruminatively:  Might you be magically
 protected, he wonders?">>
- <LTABLE
-  <LTABLE "Conquering his fears, the troll puts you to death.">>>>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "Conquering his fears, the troll puts you to death.">>>>
 
 \
 
 "messages for thief"
 
 <GLOBAL THIEF-MELEE
-<TABLE
- <LTABLE
-  <LTABLE "The thief stabs nonchalantly with his stiletto and misses.">
-  <LTABLE "You dodge as the thief comes in low.">
-  <LTABLE "You parry a lightning thrust, and the thief salutes you with
+<TABLE (PURE)
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The thief stabs nonchalantly with his stiletto and misses.">
+  <LTABLE (PURE) "You dodge as the thief comes in low.">
+  <LTABLE (PURE) "You parry a lightning thrust, and the thief salutes you with
 a grim nod.">
-  <LTABLE "The thief tries to sneak past your guard, but you twist away.">>
- <LTABLE
-  <LTABLE "Shifting in the midst of a thrust, the thief knocks you unconscious
+  <LTABLE (PURE) "The thief tries to sneak past your guard, but you twist away.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "Shifting in the midst of a thrust, the thief knocks you unconscious
 with the haft of his stiletto.">
-  <LTABLE "The thief knocks you out.">>
- <LTABLE
-  <LTABLE "Finishing you off, the thief inserts his blade into your heart.">
-  <LTABLE "The thief comes in from the side, feints, and inserts the blade
+  <LTABLE (PURE) "The thief knocks you out.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "Finishing you off, the thief inserts his blade into your heart.">
+  <LTABLE (PURE) "The thief comes in from the side, feints, and inserts the blade
 into your ribs.">
-  <LTABLE "The thief bows formally, raises his stiletto, and with a wry grin,
+  <LTABLE (PURE) "The thief bows formally, raises his stiletto, and with a wry grin,
 ends the battle and your life.">>
- <LTABLE
-  <LTABLE "A quick thrust pinks your left arm, and blood starts to
+ <LTABLE (PURE)
+  <LTABLE (PURE) "A quick thrust pinks your left arm, and blood starts to
 trickle down.">
-  <LTABLE "The thief draws blood, raking his stiletto across your arm.">
-  <LTABLE "The stiletto flashes faster than you can follow, and blood wells
+  <LTABLE (PURE) "The thief draws blood, raking his stiletto across your arm.">
+  <LTABLE (PURE) "The stiletto flashes faster than you can follow, and blood wells
 from your leg.">
-  <LTABLE "The thief slowly approaches, strikes like a snake, and leaves
+  <LTABLE (PURE) "The thief slowly approaches, strikes like a snake, and leaves
 you wounded.">>
- <LTABLE
-  <LTABLE "The thief strikes like a snake! The resulting wound is serious.">
-  <LTABLE "The thief stabs a deep cut in your upper arm.">
-  <LTABLE "The stiletto touches your forehead, and the blood obscures your
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The thief strikes like a snake! The resulting wound is serious.">
+  <LTABLE (PURE) "The thief stabs a deep cut in your upper arm.">
+  <LTABLE (PURE) "The stiletto touches your forehead, and the blood obscures your
 vision.">
-  <LTABLE "The thief strikes at your wrist, and suddenly your grip is slippery
+  <LTABLE (PURE) "The thief strikes at your wrist, and suddenly your grip is slippery
 with blood.">>
- <LTABLE
-  <LTABLE "The butt of his stiletto cracks you on the skull, and you stagger
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The butt of his stiletto cracks you on the skull, and you stagger
 back.">
-  <LTABLE "The thief rams the haft of his blade into your stomach, leaving
+  <LTABLE (PURE) "The thief rams the haft of his blade into your stomach, leaving
 you out of breath.">
-  <LTABLE "The thief attacks, and you fall back desperately.">>
- <LTABLE
-  <LTABLE "A long, theatrical slash. You catch it on your " F-WEP ", but the
+  <LTABLE (PURE) "The thief attacks, and you fall back desperately.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "A long, theatrical slash. You catch it on your " F-WEP ", but the
 thief twists his knife, and the " F-WEP " goes flying.">
-  <LTABLE "The thief neatly flips your " F-WEP " out of your hands, and it drops
+  <LTABLE (PURE) "The thief neatly flips your " F-WEP " out of your hands, and it drops
 to the floor.">
-  <LTABLE "You parry a low thrust, and your " F-WEP " slips out of your hand.">>
- <LTABLE
-  <LTABLE "The thief, a man of superior breeding, pauses for a moment to consider the propriety of finishing you off.">
-  <LTABLE "The thief amuses himself by searching your pockets.">
-  <LTABLE "The thief entertains himself by rifling your pack.">>
- <LTABLE
-  <LTABLE "The thief, forgetting his essentially genteel upbringing, cuts your
+  <LTABLE (PURE) "You parry a low thrust, and your " F-WEP " slips out of your hand.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The thief, a man of superior breeding, pauses for a moment to consider the propriety of finishing you off.">
+  <LTABLE (PURE) "The thief amuses himself by searching your pockets.">
+  <LTABLE (PURE) "The thief entertains himself by rifling your pack.">>
+ <LTABLE (PURE)
+  <LTABLE (PURE) "The thief, forgetting his essentially genteel upbringing, cuts your
 throat.">
-  <LTABLE "The thief, a pragmatist, dispatches you as a threat to his
+  <LTABLE (PURE) "The thief, a pragmatist, dispatches you as a threat to his
 livelihood.">>>>
 
 
@@ -3918,7 +3973,7 @@ valueless." CR>
 			      (ELSE <RFALSE>)>)>
 		 <SET X .N>>>
 
-<ROUTINE ROB (WHAT THIEF "OPTIONAL" (PROB <>) "AUX" N X (ROBBED? <>))
+<ROUTINE ROB (WHAT WHERE "OPTIONAL" (PROB <>) "AUX" N X (ROBBED? <>))
 	 <SET X <FIRST? .WHAT>>
 	 <REPEAT ()
 		 <COND (<NOT .X> <RETURN .ROBBED?>)>
@@ -3927,13 +3982,11 @@ valueless." CR>
 			     <NOT <FSET? .X ,SACREDBIT>>
 			     <G? <GETP .X ,P?TVALUE> 0>
 			     <OR <NOT .PROB> <PROB .PROB>>>
-			<MOVE .X .THIEF>
+			<MOVE .X .WHERE>
 			<FSET .X ,TOUCHBIT>
-			<COND (<EQUAL? .THIEF ,THIEF> <FSET .X ,INVISIBLE>)>
+			<COND (<EQUAL? .WHERE ,THIEF> <FSET .X ,INVISIBLE>)>
 			<SET ROBBED? T>)>
 		 <SET X .N>>>
-
-^/L
 
 ;"special-cased routines"
 
@@ -3962,7 +4015,7 @@ valueless." CR>
 	       (<EQUAL? .RS 2> <TELL "be killed by a serious wound">)
 	       (<EQUAL? .RS 3> <TELL "survive one serious wound">)
 	       (<G? .RS 3>
-		<TELL "strong enough to take several wounds.">)>
+		<TELL "survive several wounds">)>
 	 <TELL "." CR>
 	 <COND (<NOT <0? ,DEATHS>>
 		<TELL "You have been killed ">
@@ -3991,7 +4044,8 @@ valueless." CR>
 	 ,SCORE>
 
 <ROUTINE JIGS-UP (DESC "OPTIONAL" (PLAYER? <>))
- 	 <COND (,DEAD
+ 	 <SETG WINNER ,ADVENTURER>
+	 <COND (,DEAD
 		<TELL "|
 It takes a talented person to be killed while already dead. YOU are such
 a talent. Unfortunately, it takes a talented person to deal with it.
@@ -4028,7 +4082,7 @@ disturbed.  The objects in the dungeon appear indistinct, bleached of
 color, even unreal." CR CR>
 			<SETG DEAD T>
 			<SETG TROLL-FLAG T>
-			<SETG GWIM-DISABLE T>
+			;<SETG GWIM-DISABLE T>
 			<SETG ALWAYS-LIT T>
 			<PUTP ,WINNER ,P?ACTION DEAD-FUNCTION>
 			<GOTO ,ENTRANCE-TO-HADES>)
@@ -4041,7 +4095,8 @@ up completely, but you can't have everything." CR CR>
 		 <FCLEAR ,TRAP-DOOR ,TOUCHBIT>
 		 <SETG P-CONT <>>
 		 <RANDOMIZE-OBJECTS>
-		 <KILL-INTERRUPTS>)>>>
+		 <KILL-INTERRUPTS>
+		 <RFATAL>)>>>
 
 <ROUTINE RANDOMIZE-OBJECTS ("AUX" (R <>) F N L)
 	 <COND (<IN? ,LAMP ,WINNER>

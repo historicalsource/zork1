@@ -64,52 +64,19 @@
 	 <SETG P-CONT <>>
 	 <SETG QUOTE-FLAG <>>
 	 <COND (<EQUAL? ,WINNER ,PLAYER>
-		<TELL "You can't see any">
+		<TELL "You can't see any ">
 		<NOT-HERE-PRINT .PRSO?>
 		<TELL " here!" CR>)
 	       (T
-		<TELL "The " D ,WINNER " seems confused. \"I don't see any">
+		<TELL "The " D ,WINNER " seems confused. \"I don't see any ">
 		<NOT-HERE-PRINT .PRSO?>
 		<TELL " here!\"" CR>)>
 	 <RTRUE>>
 
-<ROUTINE FIND-NOT-HERE (TBL PRSO? "AUX" M-F OBJ)
-	;"Here is where special-case code goes. <MOBY-FIND .TBL> returns
-	   number of matches. If 1, then P-MOBY-FOUND is it. One may treat
-	   the 0 and >1 cases alike or different. It doesn't matter. Always
-	   return RFALSE (not handled) if you have resolved the problem."
-	<SET M-F <MOBY-FIND .TBL>>
-	;<COND (,DEBUG
-	       <TELL "[Moby-found " N .M-F " objects" "]" CR>)>
-	<COND (<AND <G? .M-F 1>
-		    <SET OBJ <GETP <1 .TBL> ,P?GLOBAL>>>
-	       <SET M-F 1>
-	       <SETG P-MOBY-FOUND .OBJ>)>
-	<COND (<==? 1 .M-F>
-	       ;<COND (,DEBUG <TELL "[Namely: " D ,P-MOBY-FOUND "]" CR>)>
-	       <COND (.PRSO? <SETG PRSO ,P-MOBY-FOUND>)
-		     (T <SETG PRSI ,P-MOBY-FOUND>)>
-	       <RFALSE>)
-	      (<NOT .PRSO?>
-	       <TELL "You wouldn't find any">
-	       <NOT-HERE-PRINT .PRSO?>
-	       <TELL " there." CR>
-	       <RTRUE>)
-	      (T ,NOT-HERE-OBJECT)>>
-
-<ROUTINE GLOBAL-NOT-HERE-PRINT (OBJ)
-	 ;<COND (,P-MULT <SETG P-NOT-HERE <+ ,P-NOT-HERE 1>>)>
-	 <SETG P-CONT <>>
-	 <SETG QUOTE-FLAG <>>
-	 <TELL "You can't see any">
-	 <COND (<EQUAL? .OBJ ,PRSO> <PRSO-PRINT>)
-	       (T <PRSI-PRINT>)>
-	 <TELL " here." CR>>
-
 <ROUTINE NOT-HERE-PRINT (PRSO?)
  <COND (,P-OFLAG
-	<COND (,P-XADJ <TELL " "> <PRINTB ,P-XADJN>)>
-	<COND (,P-XNAM <TELL " "> <PRINTB ,P-XNAM>)>)
+	<COND (,P-XADJ <PRINTB ,P-XADJN>)>
+	<COND (,P-XNAM <PRINTB ,P-XNAM>)>)
        (.PRSO?
 	<BUFFER-PRINT <GET ,P-ITBL ,P-NC1> <GET ,P-ITBL ,P-NC1L> <>>)
        (T
@@ -153,7 +120,20 @@
 	(ACTION SAILOR-FCN)>
 
 <ROUTINE SAILOR-FCN ()
-	  <COND (<VERB? HELLO>
+	  <COND (<VERB? TELL>
+		 <SETG P-CONT <>>
+		 <SETG QUOTE-FLAG <>>
+		 <TELL "You can't talk to the sailor that way." CR>)
+		(<VERB? EXAMINE>
+		 %<COND (<==? ,ZORK-NUMBER 3>
+			 '<COND (<NOT <FSET? ,VIKING-SHIP ,INVISIBLE>>
+				 <TELL
+"He looks like a sailor." CR>
+				 <RTRUE>)>)
+			(ELSE T)>
+		 <TELL
+"There is no sailor to be seen." CR>)
+		(<VERB? HELLO>
 		 <SETG HS <+ ,HS 1>>
 		 %<COND (<==? ,ZORK-NUMBER 3>
 			 '<COND (<NOT <FSET? ,VIKING-SHIP ,INVISIBLE>>
@@ -169,16 +149,17 @@ off toward the west, singing a lively, but somewhat uncouth, sailor song." CR>
 		                 <COND (,SHIP-GONE
 			                <TELL "Nothing happens anymore." CR>)
 			               (T
-				        <TELL "Nothing happens yet." CR>)>)>)
+				        <TELL "Nothing happens yet." CR>)>)
+				(T <TELL "Nothing happens here." CR>)>)
 			(T
-			 '<NULL-F>)>
-		 <COND (<0? <MOD ,HS 20>>
-			<TELL "You seem to be repeating yourself." CR>)
-		       (<0? <MOD ,HS 10>>
-			<TELL
+			 '<COND (<0? <MOD ,HS 20>>
+				 <TELL
+"You seem to be repeating yourself." CR>)
+				(<0? <MOD ,HS 10>>
+				 <TELL
 "I think that phrase is getting a bit worn out." CR>)
-		       (T
-			<TELL "Nothing happens here." CR>)>)>>
+				(T
+				 <TELL "Nothing happens here." CR>)>)>)>>
 
 <OBJECT GROUND
 	(IN GLOBAL-OBJECTS)
@@ -258,6 +239,10 @@ you!" CR>)
 		       <JIGS-UP "If you insist.... Poof, you're dead!">)
 		      (T
 		       <TELL "Suicide is not the answer." CR>)>)
+	       (<VERB? THROW>
+		<COND (<==? ,PRSO ,ME>
+		       <TELL
+"Why don't you just walk like normal people?" CR>)>)
 	       (<VERB? TAKE>
 		<TELL "How romantic!" CR>)
 	       (<VERB? EXAMINE>
@@ -265,11 +250,19 @@ you!" CR>)
 			      '(<EQUAL? ,HERE <LOC ,MIRROR-1> <LOC ,MIRROR-2>>
 		                <TELL
 "Your image in the mirror looks tired." CR>))
+			     (<==? ,ZORK-NUMBER 3>
+			      '(,INVIS
+				<TELL
+"A good trick, as you are currently invisible." CR>))
 			     (T
 			      '(<NULL-F> <RTRUE>))>
 		      (T
-		       <TELL
-"That's difficult unless your eyes are prehensile." CR>)>)>>
+		       %<COND (<==? ,ZORK-NUMBER 3>
+			       '<TELL
+"What you can see looks pretty much as usual, sorry to say." CR>)
+			      (ELSE
+			       '<TELL
+"That's difficult unless your eyes are prehensile." CR>)>)>)>>
 
 <OBJECT ADVENTURER
 	(SYNONYM ADVENTURER)
@@ -280,9 +273,9 @@ you!" CR>)
 
 <OBJECT PATHOBJ
 	(IN GLOBAL-OBJECTS)
-	(SYNONYM PASSAGE CRAWLWAY TRAIL PATH)
+	(SYNONYM TRAIL PATH)
         (ADJECTIVE FOREST NARROW LONG WINDING)
-	(DESC "way")
+	(DESC "passage")
 	(FLAGS NDESCBIT)
 	(ACTION PATH-OBJECT)>
 

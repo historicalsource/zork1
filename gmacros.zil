@@ -49,9 +49,6 @@
 				 <MAPRET <FORM PRINT .E>>)
 				(ELSE <ERROR UNKNOWN-TYPE .E>)>>>>>
 
-<ROUTINE PRINTA (O)
-	 <TELL "a " D .O>>
-
 <DEFMAC VERB? ("ARGS" ATMS)
 	<MULTIFROB PRSA .ATMS>>
 
@@ -63,8 +60,6 @@
 
 <DEFMAC ROOM? ("ARGS" ATMS)
 	<MULTIFROB HERE .ATMS>>
-
-<ZSTR-OFF>
 
 <DEFINE MULTIFROB (X ATMS "AUX" (OO (OR)) (O .OO) (L ()) ATM) 
 	<REPEAT ()
@@ -113,8 +108,6 @@
 			    <COND (<TYPE? .ATM FORM> .ATM)
 				  (ELSE <FORM GVAL .ATM>)>>
 		      !.O)>>>
-
-<ZSTR-ON>
 
 <DEFMAC RFATAL ()
 	'<PROG () <PUSH 2> <RSTACK>>>

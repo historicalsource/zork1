@@ -291,8 +291,8 @@ sceptre is ornamented with colored enamel, and tapers to a sharp point.")
 	(FLAGS TAKEBIT CONTBIT BURNBIT)
 	(FDESC
 "On the table is an elongated brown sack, smelling of hot peppers.")
-	(CAPACITY 15)
-	(SIZE 3)
+	(CAPACITY 9)
+	(SIZE 9)
 	(ACTION SANDWICH-BAG-FCN)>
 
 <OBJECT TOOL-CHEST
@@ -370,7 +370,8 @@ sceptre is ornamented with colored enamel, and tapers to a sharp point.")
 	(SYNONYM GARLIC CLOVE)
 	(DESC "clove of garlic")
 	(FLAGS TAKEBIT FOODBIT)
-	(ACTION GARLIC-F)>
+	(ACTION GARLIC-F)
+	(SIZE 4)>
 
 <OBJECT TRIDENT
 	(IN ATLANTIS-ROOM)
@@ -428,7 +429,7 @@ sceptre is ornamented with colored enamel, and tapers to a sharp point.")
 	(SYNONYM DOOR)
 	(ADJECTIVE HUGE STONE)
 	(DESC "stone door")
-	(FLAGS DOORBIT NDESCBIT)
+	(FLAGS DOORBIT NDESCBIT OPENBIT)
 	(ACTION BARROW-DOOR-FCN)>
 
 <OBJECT BARROW
@@ -573,8 +574,7 @@ sceptre is ornamented with colored enamel, and tapers to a sharp point.")
 |
 ZORK is a game of adventure, danger, and low cunning. In it you
 will explore some of the most amazing territory ever seen by mortals.
-No computer should be without one!\"|
-")
+No computer should be without one!\"")
 	(SIZE 2)>
 
 <OBJECT LEAK
@@ -636,7 +636,7 @@ forward to was a dead-end job as a doctor. Now I have a promising
 future and make really big Zorkmids.\"|
 |
 GUE Tech can't promise these fantastic results to everyone. But when
-you earn your degree from GUE Tech, your future will be brighter.|" )>
+you earn your degree from GUE Tech, your future will be brighter." )>
 
 <OBJECT MIRROR-2
 	(IN MIRROR-ROOM-2)
@@ -946,7 +946,7 @@ southwest, is marked \"To Stone Barrow\".")>
 	(FLAGS READBIT TAKEBIT BURNBIT)
 	(SIZE 2)
 	(TEXT
-"	  !!!! 	FROBOZZ MAGIC BOAT COMPANY  !!!!|
+"  !!!!FROBOZZ MAGIC BOAT COMPANY!!!!|
 |
 Hello, Sailor!|
 |
@@ -963,8 +963,7 @@ milliseconds from date of purchase or until first used, whichever comes first.|
 |
 Warning:|
    This boat is made of thin plastic.|
-   Good Luck!|
-" )>
+   Good Luck!" )>
 
 <OBJECT THIEF
 	(IN ROUND-ROOM)
@@ -1020,18 +1019,19 @@ feet wide at the top. The lake created behind the dam has a volume
 of 1.7 billion cubic feet, an area of 12 million square feet, and a
 shore line of 36 thousand feet.|
 |
-We will now point out some of the more interesting features
-of FCD#3 as we conduct you on a guided tour of the facilities:|
-        1) You start your tour here in the Dam Lobby. You will notice
-on your right that...." )>
-
-;"  The construction of FCD#3 took 112 days from ground breaking to
+The construction of FCD#3 took 112 days from ground breaking to
 the dedication. It required a work force of 384 slaves, 34 slave
 drivers, 12 engineers, 2 turtle doves, and a partridge in a pear
 tree. The work was managed by a command team composed of 2345
-bureaucrats, 2347 secretaries (at least two of whom can type),
+bureaucrats, 2347 secretaries (at least two of whom could type),
 12,256 paper shufflers, 52,469 rubber stampers, 245,193 red tape
-processors, and nearly one million dead trees.|"
+processors, and nearly one million dead trees.|
+|
+We will now point out some of the more interesting features
+of FCD#3 as we conduct you on a guided tour of the facilities:|
+|
+        1) You start your tour here in the Dam Lobby. You will notice
+on your right that...." )>
 
 <OBJECT TROLL
 	(IN TROLL-ROOM)
@@ -1105,14 +1105,12 @@ excised them.")>
 	(FLAGS READBIT TAKEBIT)
 	(FDESC "Loosely attached to a wall is a small piece of paper.")
 	(TEXT
-"|
-Congratulations!|
+"Congratulations!|
 |
 You are the privileged owner of ZORK I: The Great Underground Empire,
 a self-contained and self-maintaining universe. If used and maintained
 in accordance with normal operating practices for small universes, ZORK
-will provide many months of trouble-free operation.|
-|")>
+will provide many months of trouble-free operation.")>
 
 <OBJECT CLIMBABLE-CLIFF
 	(IN LOCAL-GLOBALS)
@@ -1251,14 +1249,13 @@ have, as the mainspring seems sprung.")>
       (IN TO STONE-BARROW IF WON-FLAG)
       (ACTION WEST-HOUSE)
       (FLAGS RLANDBIT ONBIT SACREDBIT)
-      (GLOBAL WHITE-HOUSE BOARD)>
+      (GLOBAL WHITE-HOUSE BOARD FOREST)>
 
 <ROOM STONE-BARROW
       (IN ROOMS)
       (LDESC
 "You are standing in front of a massive barrow of stone. In the east face
-is a huge stone door which is open. You cannot see into the dark of the
-tomb.")
+is a huge stone door which is open. You cannot see into the dark of the tomb.")
       (DESC "Stone Barrow")
       (NE TO WEST-OF-HOUSE)
       (ACTION STONE-BARROW-FCN)
@@ -1278,7 +1275,7 @@ the trees.")
       (NORTH TO PATH)
       (SOUTH "The windows are all boarded.")
       (FLAGS RLANDBIT ONBIT SACREDBIT)
-      (GLOBAL BOARDED-WINDOW BOARD WHITE-HOUSE)>
+      (GLOBAL BOARDED-WINDOW BOARD WHITE-HOUSE FOREST)>
 
 <ROOM SOUTH-OF-HOUSE
       (IN ROOMS)
@@ -1293,7 +1290,7 @@ and all the windows are boarded.")
       (SOUTH TO FOREST-3)
       (NORTH "The windows are all boarded.")
       (FLAGS RLANDBIT ONBIT SACREDBIT)
-      (GLOBAL BOARDED-WINDOW BOARD WHITE-HOUSE)>
+      (GLOBAL BOARDED-WINDOW BOARD WHITE-HOUSE FOREST)>
 
 <ROOM EAST-OF-HOUSE
       (IN ROOMS)
@@ -1307,7 +1304,7 @@ and all the windows are boarded.")
       (IN TO KITCHEN IF KITCHEN-WINDOW IS OPEN)
       (ACTION EAST-HOUSE)
       (FLAGS RLANDBIT ONBIT SACREDBIT)
-      (GLOBAL WHITE-HOUSE KITCHEN-WINDOW)>
+      (GLOBAL WHITE-HOUSE KITCHEN-WINDOW FOREST)>
 
 <ROOM FOREST-1
       (IN ROOMS)
@@ -2466,7 +2463,7 @@ shaft is a metal framework to which a heavy iron chain is attached.")
 <ROOM SMELLY-ROOM	;"was SMELL"
       (IN ROOMS)
       (LDESC
-"This is a small non-descript room. However, from the direction
+"This is a small nondescript room. However, from the direction
 of a small descending staircase a foul odor can be detected. To the
 south is a narrow tunnel.")
       (DESC "Smelly Room")
@@ -2567,7 +2564,7 @@ passage. In the shaft can be seen a heavy iron chain.")
 
 <ROOM MINE-1	;"was MINE1"
       (IN ROOMS)
-      (LDESC "This is a non-descript part of a coal mine.")
+      (LDESC "This is a nondescript part of a coal mine.")
       (DESC "Coal Mine")
       (NORTH TO GAS-ROOM)
       (EAST TO MINE-1)
@@ -2576,7 +2573,7 @@ passage. In the shaft can be seen a heavy iron chain.")
 
 <ROOM MINE-2	;"was MINE2"
       (IN ROOMS)
-      (LDESC "This is a non-descript part of a coal mine.")
+      (LDESC "This is a nondescript part of a coal mine.")
       (DESC "Coal Mine")
       (NORTH TO MINE-2)
       (SOUTH TO MINE-1)
@@ -2585,7 +2582,7 @@ passage. In the shaft can be seen a heavy iron chain.")
 
 <ROOM MINE-3	;"was MINE3"
       (IN ROOMS)
-      (LDESC "This is a non-descript part of a coal mine.")
+      (LDESC "This is a nondescript part of a coal mine.")
       (DESC "Coal Mine")
       (SOUTH TO MINE-3)
       (SW TO MINE-4)
@@ -2594,7 +2591,7 @@ passage. In the shaft can be seen a heavy iron chain.")
 
 <ROOM MINE-4	;"was MINE4"
       (IN ROOMS)
-      (LDESC "This is a non-descript part of a coal mine.")
+      (LDESC "This is a nondescript part of a coal mine.")
       (DESC "Coal Mine")
       (NORTH TO MINE-3)
       (WEST TO MINE-4)
@@ -2621,17 +2618,17 @@ a small opening.")
 ;"RANDOM TABLES FOR WALK-AROUND"
 
 <GLOBAL HOUSE-AROUND
-  <LTABLE WEST-OF-HOUSE NORTH-OF-HOUSE EAST-OF-HOUSE SOUTH-OF-HOUSE
+  <LTABLE (PURE) WEST-OF-HOUSE NORTH-OF-HOUSE EAST-OF-HOUSE SOUTH-OF-HOUSE
 	  WEST-OF-HOUSE>>
 
 <GLOBAL FOREST-AROUND
-  <LTABLE FOREST-1 FOREST-2 FOREST-3 PATH CLEARING FOREST-1>>
+  <LTABLE (PURE) FOREST-1 FOREST-2 FOREST-3 PATH CLEARING FOREST-1>>
 
 <GLOBAL IN-HOUSE-AROUND
-  <LTABLE LIVING-ROOM KITCHEN ATTIC KITCHEN>>
+  <LTABLE (PURE) LIVING-ROOM KITCHEN ATTIC KITCHEN>>
 
 <GLOBAL ABOVE-GROUND
-  <LTABLE WEST-OF-HOUSE NORTH-OF-HOUSE EAST-OF-HOUSE SOUTH-OF-HOUSE
+  <LTABLE (PURE) WEST-OF-HOUSE NORTH-OF-HOUSE EAST-OF-HOUSE SOUTH-OF-HOUSE
 	  FOREST-1 FOREST-2 FOREST-3 PATH CLEARING GRATING-CLEARING
 	  CANYON-VIEW>>
 

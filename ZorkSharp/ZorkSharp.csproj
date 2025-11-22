@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>ZorkSharp</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Title>Zork I - The Great Underground Empire</Title>
+    <Description>Modern C# .NET 9 implementation of the classic Zork I adventure game</Description>
+    <Copyright>Original game © Infocom. Open source implementation under MIT License</Copyright>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+</Project>

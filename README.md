@@ -31,3 +31,36 @@ __What is the Purpose of this Repository__
 This collection is meant for education, discussion, and historical work, allowing researchers and students to study how code was made for these interactive fiction games and how the system dealt with input and processing.
 
 Researchers are encouraged to share their discoveries about the information in this source code and the history of Infocom and its many innovative employees.
+
+__Modern C# .NET 9 Implementation__
+
+In addition to the original ZIL source code, this repository now includes **ZorkSharp**, a modern reimplementation of Zork I using C# and .NET 9. This implementation demonstrates:
+
+* **SOLID Principles**: Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, and Dependency Inversion
+* **Modern Design Patterns**: Command Pattern, Factory Pattern, Strategy Pattern, Template Method, and Facade
+* **Clean Architecture**: Separation of concerns with clear layers
+* **Type Safety**: Full use of C# nullable reference types
+* **Extensibility**: Easy to add new commands, rooms, and objects
+
+The C# implementation is located in the `ZorkSharp/` directory and includes:
+* A natural language parser for command interpretation
+* 30+ rooms from the classic Zork I world
+* 30+ objects including treasures, tools, and items
+* A complete game engine with lighting, inventory, and scoring systems
+* Comprehensive documentation on architecture and SOLID principles
+
+To run the C# version:
+```bash
+cd ZorkSharp
+dotnet build
+dotnet run
+```
+
+See [ZorkSharp/README.md](ZorkSharp/README.md) for detailed documentation and [ZorkSharp/ARCHITECTURE.md](ZorkSharp/ARCHITECTURE.md) for architectural details.
+
+This modern implementation serves as an educational resource for:
+* Learning SOLID principles in practice
+* Understanding game engine architecture
+* Studying natural language processing
+* Exploring interactive fiction game mechanics
+* Modern C# and .NET development practices
